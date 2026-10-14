@@ -1,0 +1,107 @@
+{
+  "dataset_shape": {
+    "rows": 1515,
+    "columns": 162
+  },
+  "detected_likert_count": 135,
+  "personality_block_size": 54,
+  "cluster_counts": {
+    "3": 473,
+    "0": 421,
+    "2": 354,
+    "1": 267
+  },
+  "mean_traits_by_gender": {
+    "female": {
+      "Openness": -0.2225,
+      "Conscientiousness": 0.5875,
+      "Extraversion": 0.1042,
+      "Agreeableness": -0.3466,
+      "Emotional_Stability": 0.0894
+    },
+    "male": {
+      "Openness": 0.316,
+      "Conscientiousness": -0.8344,
+      "Extraversion": -0.1479,
+      "Agreeableness": 0.4922,
+      "Emotional_Stability": -0.1269
+    }
+  },
+  "model_comparison": [
+    {
+      "Model": "RandomForest",
+      "MAE": 0.4454,
+      "RMSE": 0.5725,
+      "R2": 0.4517
+    },
+    {
+      "Model": "LinearRegression",
+      "MAE": 0.4828,
+      "RMSE": 0.6126,
+      "R2": 0.3722
+    },
+    {
+      "Model": "XGBoost",
+      "MAE": 0.4829,
+      "RMSE": 0.6122,
+      "R2": 0.3729
+    },
+    {
+      "Model": "KNNRegressor",
+      "MAE": 0.539,
+      "RMSE": 0.6889,
+      "R2": 0.206
+    }
+  ],
+  "best_model": "RandomForest",
+  "best_classifier": "RandomForestClassifier",
+  "best_auc": 0.802,
+  "demo_prediction": {
+    "happiness": 4.007,
+    "cluster": 3,
+    "recommended_interests": [
+      "Fun with friends",
+      "Countryside, outdoors",
+      "Internet",
+      "Passive sport",
+      "Foreign languages"
+    ]
+  },
+  "trait_names": [
+    "Openness",
+    "Conscientiousness",
+    "Extraversion",
+    "Agreeableness",
+    "Emotional_Stability"
+  ],
+  "input_cols": [
+    "Openness",
+    "Conscientiousness",
+    "Extraversion",
+    "Agreeableness",
+    "Emotional_Stability",
+    "Age",
+    "Height",
+    "Weight",
+    "BMI",
+    "Likert_Mean",
+    "Likert_Consistency",
+    "Smoking_former smoker",
+    "Smoking_never smoked",
+    "Smoking_tried smoking",
+    "Alcohol_never",
+    "Alcohol_social drinker",
+    "Gender_male",
+    "Education_currently a primary school pupil",
+    "Education_doctorate degree",
+    "Education_masters degree",
+    "Education_primary school",
+    "Education_secondary school",
+    "Village - town_village",
+    "House - block of flats_house/bungalow",
+    "age_bin_19-24",
+    "age_bin_25-30",
+    "age_bin_31-40",
+    "age_bin_41-60"
+  ]
+}

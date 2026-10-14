@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDPI Analytics • Disposition & Personality Intelligence Dashboard</title>
+  <meta name="description" content="Interactive Demographic & Disposition Personality Intelligence dashboard featuring live ML pipeline execution, Big 5 trait analysis, and predictive recommendations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>DDPI Analytics</h1>
+          <span class="subtitle">Demographic & Disposition Personality Intelligence</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="status-badge" id="system-status-badge">
+          <span class="status-dot"></span>
+          <span id="system-status-text">Ready</span>
+        </div>
+        <button id="run-pipeline-btn" class="btn btn-primary" title="Trigger full ML pipeline in background">
+          <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span id="run-btn-label">Run Analysis</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <!-- Quick Statistics KPI Grid -->
+    <section class="kpi-grid" aria-label="Key Performance Indicators">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Participants</span>
+          <span class="kpi-tag">Survey</span>
+        </div>
+        <div class="kpi-value" id="kpi-rows">1,515</div>
+        <div class="kpi-sub" id="kpi-cols">151 Raw Features Collected</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Likert Scale Items</span>
+          <span class="kpi-tag tag-purple">Scale 1-5</span>
+        </div>
+        <div class="kpi-value" id="kpi-likert">135</div>
+        <div class="kpi-sub">Imputed via KNN (K=25, Distance)</div>
+      </div>
+
+      <div class="kpi-card highlight-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Top Regression Model</span>
+          <span class="kpi-badge-gold">Rank #1</span>
+        </div>
+        <div class="kpi-value text-gradient" id="kpi-best-model">Random Forest</div>
+        <div class="kpi-sub">MAE: <strong id="kpi-mae">0.4454</strong> &bull; R²: <strong id="kpi-r2">0.4517</strong></div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Classification ROC AUC</span>
+          <span class="kpi-tag tag-emerald">High vs Low</span>
+        </div>
+        <div class="kpi-value text-emerald" id="kpi-auc">0.802</div>
+        <div class="kpi-sub">Target: Happiness in Life (&ge;4)</div>
+      </div>
+    </section>
+
+    <!-- Main Content Layout: Two Columns -->
+    <div class="dashboard-layout">
+      <!-- Left Column: Controls, Terminal & Interactive Simulator -->
+      <div class="dashboard-column left-col">
+        
+        <!-- Live Terminal Execution Console -->
+        <section class="card terminal-card" id="terminal-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </span>
+              <h2>Execution Console</h2>
+            </div>
+            <div class="terminal-actions">
+              <span class="live-pill" id="live-indicator">IDLE</span>
+              <button id="clear-terminal-btn" class="btn-ghost" title="Clear console output">Clear</button>
+            </div>
+          </div>
+          <div class="terminal-body" id="terminal-body">
+            <pre class="terminal-output" id="terminal-log">Dataset loaded & model metrics initialized.
+Click "Run Analysis" to re-train models and regenerate charts in real-time.</pre>
+          </div>
+        </section>
+
+        <!-- Interactive Personality & Disposition Playground -->
+        <section class="card predictor-card" id="predictor-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="icon-bubble">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Interactive Disposition Predictor</h2>
+                <p class="card-desc">Adjust Big-Five trait dimensions to preview predicted happiness & recommended activities.</p>
+              </div>
+            </div>
+          </div>
+          
+          <form id="prediction-form" class="prediction-form" onsubmit="event.preventDefault();">
+            <div class="sliders-grid">
+              <!-- Slider: Openness -->
+              <div class="slider-control">
+                <div class="slider-meta">
+                  <label for="slider-openness">Openness to Experience</label>
+                  <span class="slider-val" id="val-openness">0.00</span>
+                </div>
+                <input type="range" id="slider-openness" min="-2.0" max="2.0" step="0.05" value="0.00">
+                <div class="slider-ticks"><span>Conventional (-2)</span><span>Balanced (0)</span><span>Curious (+2)</span></div>
+              </div>
+
+              <!-- Slider: Conscientiousness -->
+              <div class="slider-control">
+                <div class="slider-meta">
+                  <label for="slider-conscientiousness">Conscientiousness</label>
+                  <span class="slider-val" id="val-conscientiousness">0.00</span>
+                </div>
+                <input type="range" id="slider-conscientiousness" min="-2.0" max="2.0" step="0.05" value="0.00">
+                <div class="slider-ticks"><span>Flexible (-2)</span><span>Organized (0)</span><span>Disciplined (+2)</span></div>
+              </div>
+
+              <!-- Slider: Extraversion -->
+              <div class="slider-control">
+                <div class="slider-meta">
+                  <label for="slider-extraversion">Extraversion</label>
+                  <span class="slider-val" id="val-extraversion">0.20</span>
+                </div>
+                <input type="range" id="slider-extraversion" min="-2.0" max="2.0" step="0.05" value="0.20">
+                <div class="slider-ticks"><span>Introverted (-2)</span><span>Ambivert (0)</span><span>Outgoing (+2)</span></div>
+              </div>
+
+              <!-- Slider: Agreeableness -->
+              <div class="slider-control">
+                <div class="slider-meta">
+                  <label for="slider-agreeableness">Agreeableness</label>
+                  <span class="slider-val" id="val-agreeableness">0.10</span>
+                </div>
+                <input type="range" id="slider-agreeableness" min="-2.0" max="2.0" step="0.05" value="0.10">
+                <div class="slider-ticks"><span>Competitive (-2)</span><span>Cooperative (0)</span><span>Empathetic (+2)</span></div>
+              </div>
+
+              <!-- Slider: Emotional Stability -->
+              <div class="slider-control">
+                <div class="slider-meta">
+                  <label for="slider-emotional-stability">Emotional Stability</label>
+                  <span class="slider-val" id="val-emotional-stability">0.15</span>
+                </div>
+                <input type="range" id="slider-emotional-stability" min="-2.0" max="2.0" step="0.05" value="0.15">
+                <div class="slider-ticks"><span>Sensitive (-2)</span><span>Steady (0)</span><span>Resilient (+2)</span></div>
+              </div>
+            </div>
+
+            <!-- Demographics row -->
+            <div class="demographics-row">
+              <div class="input-group">
+                <label for="select-gender">Gender</label>
+                <select id="select-gender" class="form-select">
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label for="input-age">Age (Years)</label>
+                <input type="number" id="input-age" class="form-input" min="15" max="65" value="23">
+              </div>
+
+              <div class="input-group">
+                <label for="input-bmi">BMI</label>
+                <input type="number" id="input-bmi" class="form-input" min="15" max="45" step="0.5" value="21.8">
+              </div>
+            </div>
+
+            <!-- Prediction Outcome Display Card -->
+            <div class="prediction-results-box" id="prediction-results">
+              <div class="result-header">
+                <div>
+                  <span class="result-badge" id="res-tier-badge">High Happiness</span>
+                  <div class="result-score-title">Predicted Life Happiness</div>
+                </div>
+                <div class="score-display">
+                  <span class="score-number" id="res-happiness-score">4.01</span>
+                  <span class="score-scale">/ 5.00</span>
+                </div>
+              </div>
+
+              <!-- Gauge Progress Bar -->
+              <div class="gauge-track">
+                <div class="gauge-fill" id="res-gauge-fill" style="width: 80.2%;"></div>
+              </div>
+
+              <!-- Archetype Cluster Result -->
+              <div class="cluster-summary-card">
+                <div class="cluster-label">Assigned Personality Archetype</div>
+                <div class="cluster-name" id="res-cluster-name">Social Connectors & Dynamic Optimists</div>
+                <div class="cluster-desc" id="res-cluster-desc">Outgoing, energetic, high emotional resilience, loves social interaction.</div>
+              </div>
+
+              <!-- Interest Recommendations -->
+              <div class="interests-container">
+                <div class="interests-title">Recommended Top Interests:</div>
+                <div class="tags-flex" id="res-interest-tags">
+                  <span class="tag-pill">Fun with friends</span>
+                  <span class="tag-pill">Countryside, outdoors</span>
+                  <span class="tag-pill">Internet</span>
+                  <span class="tag-pill">Passive sport</span>
+                  <span class="tag-pill">Foreign languages</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <!-- Right Column: Visualizations & Analytics Benchmarks -->
+      <div class="dashboard-column right-col">
+        
+        <!-- Generated Visualizations Gallery -->
+        <section class="card gallery-card" id="gallery-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="icon-bubble">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Exploratory Data Visualizations</h2>
+                <p class="card-desc">High-resolution plots produced directly from the data analysis pipeline.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Selector Tabs -->
+          <div class="tabs-nav" role="tablist">
+            <button class="tab-btn active" data-tab="tab-chart-1" role="tab" id="btn-tab-1">Happiness Distribution</button>
+            <button class="tab-btn" data-tab="tab-chart-2" role="tab" id="btn-tab-2">Feature Correlation</button>
+            <button class="tab-btn" data-tab="tab-chart-3" role="tab" id="btn-tab-3">Model MAE Comparison</button>
+            <button class="tab-btn" data-tab="tab-chart-4" role="tab" id="btn-tab-4">Classification ROC</button>
+          </div>
+
+          <div class="tab-content">
+            <!-- Chart 1 -->
+            <div class="tab-pane active" id="tab-chart-1" role="tabpanel">
+              <div class="image-wrapper" title="Click to view full screen">
+                <img id="img-target-dist" src="eda_target_distribution.png" alt="Distribution of Happiness in Life Target" loading="lazy">
+              </div>
+              <div class="chart-caption">
+                <strong>Histogram:</strong> Distribution of participants' self-reported happiness in life (ratings 1 to 5).
+              </div>
+            </div>
+
+            <!-- Chart 2 -->
+            <div class="tab-pane" id="tab-chart-2" role="tabpanel">
+              <div class="image-wrapper" title="Click to view full screen">
+                <img id="img-corr-heatmap" src="eda_correlation_heatmap.png" alt="Correlation Heatmap for Top 30 Numeric Features" loading="lazy">
+              </div>
+              <div class="chart-caption">
+                <strong>Heatmap:</strong> Inter-feature Pearson correlations across top 30 highest variance numeric indicators.
+              </div>
+            </div>
+
+            <!-- Chart 3 -->
+            <div class="tab-pane" id="tab-chart-3" role="tabpanel">
+              <div class="image-wrapper" title="Click to view full screen">
+                <img id="img-model-mae" src="model_comparison_mae.png" alt="Regression Model Comparison by MAE" loading="lazy">
+              </div>
+              <div class="chart-caption">
+                <strong>Model Benchmark:</strong> Mean Absolute Error (MAE) for RandomForest, Linear Regression, XGBoost, and KNN.
+              </div>
+            </div>
+
+            <!-- Chart 4 -->
+            <div class="tab-pane" id="tab-chart-4" role="tabpanel">
+              <div class="image-wrapper" title="Click to view full screen">
+                <img id="img-roc-curve" src="roc_curve_happiness.png" alt="ROC Curve for High vs Low Happiness Classification" loading="lazy">
+              </div>
+              <div class="chart-caption">
+                <strong>Receiver Operating Characteristic:</strong> AUC score of 0.802 distinguishing high happiness (&ge;4) vs lower tiers.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Model Comparison & Demographic Benchmarks -->
+        <section class="card benchmark-card" id="benchmarks-section">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="icon-bubble">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              </div>
+              <div>
+                <h2>Model Leaderboard & Demographic Profiles</h2>
+                <p class="card-desc">Comparative metrics across test evaluations.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regression Performance Table -->
+          <div class="table-container">
+            <table class="data-table" id="models-table">
+              <thead>
+                <tr>
+                  <th>Model Algorithm</th>
+                  <th>MAE (Error &darr;)</th>
+                  <th>RMSE</th>
+                  <th>R² Score (&uarr;)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="models-table-body">
+                <!-- Populated dynamically via app.js -->
+                <tr>
+                  <td><strong>RandomForest</strong></td>
+                  <td><span class="badge-accent">0.4454</span></td>
+                  <td>0.5725</td>
+                  <td>0.4517</td>
+                  <td><span class="pill-best">Best Fit</span></td>
+                </tr>
+                <tr>
+                  <td>LinearRegression</td>
+                  <td>0.4828</td>
+                  <td>0.6126</td>
+                  <td>0.3722</td>
+                  <td>Baseline</td>
+                </tr>
+                <tr>
+                  <td>XGBoost</td>
+                  <td>0.4829</td>
+                  <td>0.6122</td>
+                  <td>0.3729</td>
+                  <td>Gradient Boost</td>
+                </tr>
+                <tr>
+                  <td>KNNRegressor</td>
+                  <td>0.5390</td>
+                  <td>0.6889</td>
+                  <td>0.2060</td>
+                  <td>Neighbor K=15</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Personality Clusters and Gender Differences Cards -->
+          <div class="insights-grid">
+            <div class="insight-box">
+              <div class="insight-box-title">Personality Clusters (K-Means)</div>
+              <div class="cluster-bars" id="cluster-bars-container">
+                <div class="cluster-row">
+                  <span class="c-label">Cluster 3 (Outgoing)</span>
+                  <div class="c-bar-track"><div class="c-bar-fill fill-cyan" style="width: 31.2%;"></div></div>
+                  <span class="c-count">473</span>
+                </div>
+                <div class="cluster-row">
+                  <span class="c-label">Cluster 0 (Creative)</span>
+                  <div class="c-bar-track"><div class="c-bar-fill fill-purple" style="width: 27.8%;"></div></div>
+                  <span class="c-count">421</span>
+                </div>
+                <div class="cluster-row">
+                  <span class="c-label">Cluster 2 (Disciplined)</span>
+                  <div class="c-bar-track"><div class="c-bar-fill fill-amber" style="width: 23.4%;"></div></div>
+                  <span class="c-count">354</span>
+                </div>
+                <div class="cluster-row">
+                  <span class="c-label">Cluster 1 (Reflective)</span>
+                  <div class="c-bar-track"><div class="c-bar-fill fill-emerald" style="width: 17.6%;"></div></div>
+                  <span class="c-count">267</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="insight-box">
+              <div class="insight-box-title">Gender Trait Divergence (Standardized)</div>
+              <div class="gender-traits" id="gender-traits-container">
+                <div class="trait-stat-row">
+                  <span class="t-name">Conscientiousness</span>
+                  <span class="t-val female-color">Female: +0.59</span>
+                  <span class="t-val male-color">Male: -0.83</span>
+                </div>
+                <div class="trait-stat-row">
+                  <span class="t-name">Agreeableness</span>
+                  <span class="t-val female-color">Female: -0.35</span>
+                  <span class="t-val male-color">Male: +0.49</span>
+                </div>
+                <div class="trait-stat-row">
+                  <span class="t-name">Openness</span>
+                  <span class="t-val female-color">Female: -0.22</span>
+                  <span class="t-val male-color">Male: +0.32</span>
+                </div>
+                <div class="trait-stat-row">
+                  <span class="t-name">Emotional Stability</span>
+                  <span class="t-val female-color">Female: +0.09</span>
+                  <span class="t-val male-color">Male: -0.13</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Image Lightbox Modal -->
+  <div id="image-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <button id="modal-close-btn" class="modal-close" aria-label="Close modal">&times;</button>
+      <img id="modal-img" src="" alt="Full size preview">
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>DDPI Machine Learning Analytics &bull; Connected to Local Python Environment</div>
+      <div class="footer-meta">Auto-refreshed from <code>responses_data.csv</code> via <code>DDPI.py</code></div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+
+pip install ipykernel
+pip install numpy
+pip install pandas
+pip install matplotlib
+pip install scikit-learn   (KKNImputer) line 9 to line 17
+pip install xgboost
